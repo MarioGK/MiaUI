@@ -1,0 +1,44 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="..\..\build\MewUI.Common.props" />
+
+  <PropertyGroup>
+    <DefineConstants>$(DefineConstants);MEWUI_MEWVG_MACOS</DefineConstants>
+
+    <AssemblyName>$(MewUITitle).Backend.MewVG.MacOS</AssemblyName>
+    <PackageId>$(MewUITitle).Backend.MewVG.MacOS</PackageId>
+    <Description>MewVG (NanoVG/Metal) backend for $(MewUITitle) on macOS</Description>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(MewVGProjectPath)' == ''">
+    <PackageReference Include="Aprillz.MewVG.Core" Version="$(MewVGVersion)" />
+    <PackageReference Include="Aprillz.MewVG.Metal" Version="$(MewVGVersion)" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(MewVGProjectPath)' != ''">
+    <ProjectReference Include="$(MewVGProjectPath)\src\MewVG.Core\MewVG.Core.csproj" />
+    <ProjectReference Include="$(MewVGProjectPath)\src\MewVG.Metal\MewVG.Metal.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\MewUI\MewUI.csproj" />
+    <ProjectReference Include="..\MewUI.Platform.MacOS\MewUI.Platform.MacOS.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\MewUI\Shared\Rendering\MewVG\MewVGGraphicsContext.Common.cs" LinkBase="Rendering\MewVG" />
+    <Compile Include="..\MewUI\Shared\Rendering\MewVG\MewVGGraphicsFactory.cs" LinkBase="Rendering\MewVG" />
+    <Compile Include="..\MewUI\Shared\Rendering\MewVG\MewVGGraphicsFactory.MacOS.cs" LinkBase="Rendering\MewVG" />
+
+    <Compile Include="..\MewUI\Shared\Rendering\MewVG\MewVGExternalRasterImage.cs" LinkBase="Rendering\MewVG" />
+    <Compile Include="..\MewUI\Shared\Rendering\MewVG\MewVGImage.cs" LinkBase="Rendering\MewVG" />
+    <Compile Include="..\MewUI\Shared\Rendering\MewVG\NvgStrokeHelper.cs" LinkBase="Rendering\MewVG" />
+    <Compile Include="..\MewUI\Shared\Rendering\MewVG\MacOS\*.cs" LinkBase="Rendering\MewVG" />
+
+    <Compile Include="..\MewUI\Shared\Rendering\Common\TextBitmap.cs" LinkBase="Rendering\Common" />
+    <Compile Include="..\MewUI\Shared\Rendering\Common\TextCacheKey.cs" LinkBase="Rendering\Common" />
+    <Compile Include="..\MewUI\Shared\Rendering\Common\TextInkInsetPx.cs" LinkBase="Rendering\Common" />
+    <Compile Include="..\MewUI\Shared\Rendering\CoreText\*.cs" LinkBase="Rendering\CoreText" />
+    <Compile Include="..\MewUI\Shared\Native\MacOS\MetalExt.cs" LinkBase="Native" />
+    <Compile Include="..\MewUI\Shared\Native\MacOS\Structs\CGGeometry.cs" LinkBase="Native\Structs" />
+  </ItemGroup>
+
+</Project>

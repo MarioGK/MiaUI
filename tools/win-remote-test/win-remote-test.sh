@@ -1,0 +1,80 @@
+#!/usr/bin/env bash
+# Runs the window automation suite on a remote multi-monitor Windows machine. Publishes self-contained
+# here, ships the payload over SSH, and hands the run to the broker in that machine's console session:
+# SSH itself lands in the sshd service session, where the physical monitors are not visible.
+#
+# The suite derives its cases from whatever displays the machine has (see MonitorMatrix), so the point
+# of a remote box is the scales it owns, not the machine itself.
+#
+# Pass an ssh-config alias rather than user@host: scp spells the port -P and ssh -p, so a target
+# carrying a non-default port cannot satisfy both, and the machine is reached over a non-default port
+# from outside its LAN.
+#
+# Usage: ./win-remote-test.sh <ssh-target> [-- <extra runner args>]
+#   ./win-remote-test.sh mewui-testbox
+#   ./win-remote-test.sh mewui-testbox -- --filter "FullyQualifiedName~MenuCaptionTrimTests"
+set -euo pipefail
+
+SSH_TARGET="${1:?usage: win-remote-test.sh <ssh-target> [-- <extra runner args>]}"
+shift
+if [[ "${1:-}" == "--" ]]; then shift; fi
+RUNNER_ARGS="$*"
+
+HERE="$(cd "$(dirname "$0")" && pwd)"
+REPO="$(cd "$HERE/../.." && pwd)"
+PROJECT="$REPO/tests/MewUI.WindowAutomationTest/MewUI.WindowAutomationTest.csproj"
+# Everything a run writes stays under the ignored .artifacts, never next to the script.
+OUT="$REPO/.artifacts/win-remote-test"
+PUBLISH_DIR="$OUT/publish"
+mkdir -p "$OUT"
+REMOTE_ROOT="${MEWUI_REMOTE_ROOT:-C:\\Workspace\\Dev}"
+JOB_ID="run-$(date +%Y%m%d-%H%M%S)"
+# The whole suite takes a little over five minutes on the test machine, and a filtered run seconds.
+# The wait ends that much sooner when a run hangs; MEWUI_REMOTE_TIMEOUT overrides both.
+if [[ "$RUNNER_ARGS" == *--filter* ]]; then DEFAULT_TIMEOUT_SECONDS=120; else DEFAULT_TIMEOUT_SECONDS=480; fi
+TIMEOUT_SECONDS="${MEWUI_REMOTE_TIMEOUT:-$DEFAULT_TIMEOUT_SECONDS}"
+
+# UseVSTest=false selects the MSTest runner, which produces a plain executable: the remote machine then
+# needs no SDK, and self-contained means it needs no .NET at all.
+echo "== publishing the suite (self-contained)"
+dotnet publish "$PROJECT" -c Debug -f net8.0 -r win-x64 --self-contained \
+  -p:UseVSTest=false -o "$PUBLISH_DIR" -v:q --nologo
+
+echo "== checking the broker"
+ssh "$SSH_TARGET" "powershell -NoProfile -Command \"if (Test-Path '$REMOTE_ROOT\\broker.alive') { Get-Content '$REMOTE_ROOT\\broker.alive' } else { 'NO_BROKER'; exit 1 }\""
+
+echo "== shipping the payload"
+tar -C "$OUT" -czf "$OUT/payload.tgz" publish
+scp -q "$OUT/payload.tgz" "$SSH_TARGET:$REMOTE_ROOT\\payload.tgz"
+rm "$OUT/payload.tgz"
+ssh "$SSH_TARGET" "powershell -NoProfile -Command \"Remove-Item -Recurse -Force '$REMOTE_ROOT\\publish' -ErrorAction SilentlyContinue; tar -C '$REMOTE_ROOT' -xzf '$REMOTE_ROOT\\payload.tgz'; Remove-Item '$REMOTE_ROOT\\payload.tgz'\""
+
+# The job is written to a staging name and renamed, so the broker never picks up a half-uploaded file.
+echo "== queueing $JOB_ID"
+# MEWUI_REMOTE_ENV carries NAME=value pairs (semicolon-separated) into the job, for runs that
+# select a backend or a rendering mode through the environment.
+ENV_LINES=""
+if [[ -n "${MEWUI_REMOTE_ENV:-}" ]]; then
+  IFS=';' read -ra PAIRS <<< "$MEWUI_REMOTE_ENV"
+  for pair in "${PAIRS[@]}"; do
+    [[ -n "$pair" ]] && ENV_LINES+="set $pair"$'\n'
+  done
+fi
+cat > "$OUT/$JOB_ID.cmd" <<EOF
+@echo off
+${ENV_LINES}"$REMOTE_ROOT\\publish\\Aprillz.MewUI.WindowAutomationTest.exe" --settings "$REMOTE_ROOT\\publish\\test.runsettings" $RUNNER_ARGS
+EOF
+scp -q "$OUT/$JOB_ID.cmd" "$SSH_TARGET:$REMOTE_ROOT\\jobs\\$JOB_ID.staging"
+rm "$OUT/$JOB_ID.cmd"
+ssh "$SSH_TARGET" "powershell -NoProfile -Command \"Move-Item '$REMOTE_ROOT\\jobs\\$JOB_ID.staging' '$REMOTE_ROOT\\jobs\\$JOB_ID.cmd' -Force\""
+
+echo "== waiting for the console session to finish"
+# Double quotes, not single: powershell -File takes a single-quoted path literally, quotes included.
+STATUS=0
+ssh "$SSH_TARGET" "powershell -NoProfile -ExecutionPolicy Bypass -File \"$REMOTE_ROOT\\wait-job.ps1\" -Id \"$JOB_ID\" -Root \"$REMOTE_ROOT\" -TimeoutSeconds $TIMEOUT_SECONDS" || STATUS=$?
+if [[ $STATUS -eq 99 ]]; then
+  # The job outlived its wait. The runner still holds the console session, and the next job would queue behind it.
+  echo "== timed out after $TIMEOUT_SECONDS s; stopping the runner"
+  ssh "$SSH_TARGET" "powershell -NoProfile -Command \"Get-Process Aprillz.MewUI.WindowAutomationTest -ErrorAction SilentlyContinue | Stop-Process -Force\"" || true
+fi
+exit $STATUS

@@ -1,0 +1,36 @@
+<Project>
+
+  <!-- Analyzer wiring for every sample that source-references MewUI: ProjectReference does not
+       flow analyzer assets, so inject the analyzer project reference here once. Guarded off under
+       AOT publish (netstandard2.0 analyzer in the publish graph breaks publish) and opt-out via
+       MewUIAnalyzers=false. -->
+  <ItemGroup Condition="'$(MewUIAnalyzers)' != 'false' and '$(PublishAot)' != 'true'
+                        and '@(ProjectReference->WithMetadataValue('Filename', 'MewUI'))' != ''">
+    <ProjectReference Include="$(MSBuildThisFileDirectory)..\src\MewUI.Analyzers\MewUI.Analyzers.csproj"
+                      OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <!-- The generator must stay loaded under AOT publish: unlike the analyzer, dropping it changes
+       what compiles, so a published sample would take the runtime fallback and throw where the
+       Debug build worked. A ProjectReference cannot be used because publish properties flow into
+       the netstandard2.0 generator project and fail it with NETSDK1207, and UndefineProperties
+       does not stop that. Building it through the MSBuild task with RemoveProperties does, and
+       feeding TargetOutputs into @(Analyzer) keeps ordering correct without a project reference.
+       Interceptors also need the generated namespace allow-listed, which
+       build/Aprillz.MewUI.targets injects for samples that import it. -->
+  <Target Name="_MewUIAddBindingPathGenerator"
+          BeforeTargets="CoreCompile"
+          Condition="'$(MewUIAnalyzers)' != 'false'
+                     and '@(ProjectReference->WithMetadataValue('Filename', 'MewUI'))' != ''">
+    <MSBuild Projects="$(MSBuildThisFileDirectory)..\src\MewUI.Generators\MewUI.Generators.csproj"
+             Targets="Build"
+             RemoveProperties="PublishAot;RuntimeIdentifier;SelfContained;TrimMode;PublishTrimmed;TargetFramework;RuntimeIdentifiers">
+      <Output TaskParameter="TargetOutputs" ItemName="_MewUIBindingPathGenerator" />
+    </MSBuild>
+
+    <ItemGroup>
+      <Analyzer Include="@(_MewUIBindingPathGenerator)" />
+    </ItemGroup>
+  </Target>
+
+</Project>

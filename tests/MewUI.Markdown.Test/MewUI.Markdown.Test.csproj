@@ -1,0 +1,23 @@
+<Project Sdk="MSTest.Sdk/4.0.1">
+
+  <PropertyGroup>
+    <AssemblyName>Aprillz.MewUI.Markdown.Test</AssemblyName>
+    <TargetFrameworks>net8.0;net10.0</TargetFrameworks>
+    <LangVersion>latest</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <UseVSTest>true</UseVSTest>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\MewUI.Backend.Gdi\MewUI.Backend.Gdi.csproj" />
+    <ProjectReference Include="..\..\extensions\MewUI.Markdown\MewUI.Markdown.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Headless window helpers shared with the core test project for focus and DPI scenarios. -->
+    <Compile Include="..\MewUI.Test\Infrastructure\HeadlessWindow.cs" Link="Infrastructure\HeadlessWindow.cs" />
+    <Compile Include="..\MewUI.Test\Infrastructure\HeadlessWindowBackend.cs" Link="Infrastructure\HeadlessWindowBackend.cs" />
+  </ItemGroup>
+
+</Project>

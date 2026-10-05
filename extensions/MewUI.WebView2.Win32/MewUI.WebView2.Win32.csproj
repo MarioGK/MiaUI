@@ -1,0 +1,87 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="..\..\build\MewUI.Common.props" />
+
+  <PropertyGroup>
+    <TargetFrameworks>net10.0-windows</TargetFrameworks>
+    <AssemblyName>$(MewUITitle).WebView2.Win32</AssemblyName>
+    <PackageId>$(MewUITitle).WebView2.Win32</PackageId>
+    <Description>Win32 WebView2 control for $(MewUITitle). Requires Microsoft Edge WebView2 Runtime (Evergreen).</Description>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+
+    <PackageTags>webview2;win32;native;aot;gui;browser</PackageTags>
+  </PropertyGroup>
+  
+ 
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\MewUI\MewUI.csproj" />
+    <ProjectReference Include="..\..\src\MewUI.Platform.Win32\MewUI.Platform.Win32.csproj" />
+  </ItemGroup>
+ 
+  <ItemGroup>
+    <Reference Include="DirectN">
+      <HintPath>External\DirectN.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+    <Reference Include="DirectN.Extensions">
+      <HintPath>External\DirectN.Extensions.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+    <Reference Include="WebView2">
+      <HintPath>External\WebView2.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);IncludeExternalDlls</TargetsForTfmSpecificBuildOutput>
+  </PropertyGroup>
+  <Target Name="IncludeExternalDlls">
+    <ItemGroup>
+      <BuildOutputInPackage Include="External\DirectN.dll" />
+      <BuildOutputInPackage Include="External\DirectN.Extensions.dll" />
+      <BuildOutputInPackage Include="External\WebView2.dll" />
+    </ItemGroup>
+  </Target>
+
+  <ItemGroup>
+    <Folder Include="External\" />
+  </ItemGroup>
+
+   <ItemGroup>
+    <None Remove="runtimes\win-arm64\native\WebView2Loader.dll" />
+    <None Remove="runtimes\win-x64\native\WebView2Loader.dll" />
+    <None Remove="runtimes\win-x86\native\WebView2Loader.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="runtimes\win-arm64\native\WebView2Loader.dll" />
+    <EmbeddedResource Include="runtimes\win-x64\native\WebView2Loader.dll" />
+    <EmbeddedResource Include="runtimes\win-x86\native\WebView2Loader.dll" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Using Include="DirectN" />
+    <Using Include="DirectN.Extensions" />
+    <Using Include="DirectN.Extensions.Com" />
+    <Using Include="DirectN.Extensions.Utilities" />
+    <Using Include="WebView2" />
+    <Using Include="WebView2.Utilities" />
+    <Using Include="System" />
+    <Using Include="System.Collections.Concurrent" />
+    <Using Include="System.ComponentModel" />
+    <Using Include="System.Diagnostics.CodeAnalysis" />
+    <Using Include="System.Globalization" />
+    <Using Include="System.Linq" />
+    <Using Include="System.Numerics" />
+    <Using Include="System.Reflection" />
+    <Using Include="System.Runtime.Versioning" />
+    <Using Include="System.Runtime.CompilerServices" />
+    <Using Include="System.Runtime.InteropServices" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <None Include="build\$(PackageId).targets" Pack="true" PackagePath="build\" />
+    <None Include="build\$(PackageId).targets" Pack="true" PackagePath="buildTransitive\" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,60 @@
+name: Release (NuGet + GitHub)
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            10.0.x
+
+      - name: Compute version
+        id: version
+        shell: pwsh
+        run: |
+          $tag = "${{ github.ref_name }}"
+          if ($tag.StartsWith("v")) { $tag = $tag.Substring(1) }
+          "version=$tag" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+
+      - name: Pack all packages
+        shell: cmd
+        run: tools\pack\pack_mewui.cmd ${{ steps.version.outputs.version }}
+
+      - name: Push to NuGet
+        shell: pwsh
+        run: |
+          $packages = Get-ChildItem ".\.artifacts\nuget" -Filter "*.nupkg" -File
+          if ($packages.Count -eq 0) { throw "No .nupkg found under .artifacts/nuget" }
+
+          Write-Host "Pushing $($packages.Count) packages..."
+          foreach ($pkg in $packages) {
+            Write-Host "  $($pkg.Name)"
+            dotnet nuget push $pkg.FullName `
+              --api-key "${{ secrets.NUGET_API_KEY }}" `
+              --source "https://api.nuget.org/v3/index.json" `
+              --skip-duplicate
+          }
+
+      - name: GitHub Release (auto notes)
+        uses: softprops/action-gh-release@v2
+        with:
+          files: .artifacts/nuget/*.nupkg
+          generate_release_notes: true
+          prerelease: ${{ contains(github.ref_name, '-') }}

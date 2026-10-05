@@ -1,0 +1,43 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="..\..\build\MewUI.Common.props" />
+
+  <PropertyGroup>
+    <AssemblyName>$(MewUITitle).Backend.Gdi</AssemblyName>
+    <PackageId>$(MewUITitle).Backend.Gdi</PackageId>
+    <Description>GDI rendering backend for $(MewUITitle)</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MewUI\MewUI.csproj" />
+    <ProjectReference Include="..\MewUI.Platform.Win32\MewUI.Platform.Win32.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\MewUI\Shared\Rendering\Gdi\*.cs" LinkBase="Rendering\Gdi" />
+    <Compile Include="..\MewUI\Shared\Rendering\Gdi\Core\*.cs" LinkBase="Rendering\Gdi\Core" />
+    <Compile Include="..\MewUI\Shared\Rendering\Win32\*.cs" LinkBase="Rendering\Win32" />
+    <Compile Include="..\MewUI\Shared\Rendering\DirectWrite\**\*.cs" LinkBase="Rendering\DirectWrite" />
+    <Compile Include="..\MewUI\Shared\Native\Win32\DirectWrite\**\*.cs" LinkBase="Native\DirectWrite" />
+    <Compile Include="..\MewUI\Shared\Rendering\Common\TextBitmap.cs" LinkBase="Rendering\Common" />
+    <Compile Include="..\MewUI\Shared\Rendering\Common\TextCacheKey.cs" LinkBase="Rendering\Common" />
+    <Compile Include="..\MewUI\Shared\Rendering\Common\TextInkInsetPx.cs" LinkBase="Rendering\Common" />
+    <Compile Include="..\MewUI\Shared\Native\Win32\User32.cs" LinkBase="Native" />
+    <Compile Include="..\MewUI\Shared\Native\Win32\Gdi32.cs" LinkBase="Native" />
+    <Compile Include="..\MewUI\Shared\Native\Win32\Win32Fonts.cs" LinkBase="Native" />
+    <Compile Include="..\MewUI\Shared\Native\Common\Structs\*.cs" LinkBase="Native\Structs" />
+    <Compile Include="..\MewUI\Shared\Native\Win32\Com\**\*.cs" LinkBase="Native\Com"/>
+    <Compile Include="..\MewUI\Shared\Native\Win32\Structs\*.cs" LinkBase="Native\Structs" />
+    <!-- Public types (Char32/Byte32) come from Platform.Win32 via ProjectReference; avoid duplicate compilation. -->
+    <Compile Remove="..\MewUI\Shared\Native\Win32\Structs\InlineArrays.cs" />
+    <Compile Include="..\MewUI\Shared\Native\Win32\Constants\*.cs" LinkBase="Native\Constants" />
+  </ItemGroup>
+
+  <!-- Feature-switch substitutions let the trimmer drop the unselected Win32 text path. -->
+  <ItemGroup>
+    <EmbeddedResource Include="ILLink.Substitutions.xml">
+      <LogicalName>ILLink.Substitutions.xml</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+
+</Project>

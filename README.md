@@ -1,0 +1,386 @@
+![Aprillz.MewUI](https://raw.githubusercontent.com/aprillz/MewUI/main/assets/logo/logo_h.svg)
+
+
+[![Website](https://img.shields.io/badge/Website-mewui.aprillz.net-8F54DB)](https://mewui.aprillz.net)
+![.NET](https://img.shields.io/badge/.NET-8%2B-512BD4?logo=dotnet&logoColor=white)
+![Windows](https://img.shields.io/badge/Windows-10%2B-0078D4?logo=windows&logoColor=white)
+![Linux](https://img.shields.io/badge/Linux-X11-FCC624?logo=linux&logoColor=black)
+![macOS](https://img.shields.io/badge/macOS-12%2B-901DBA?logo=Apple&logoColor=white)
+![Browser](https://img.shields.io/badge/Browser-WebAssembly-654FF0?logo=webassembly&logoColor=white)
+![NativeAOT](https://img.shields.io/badge/NativeAOT-Ready-2E7D32)
+![License: MIT](https://img.shields.io/badge/License-MIT-000000)
+[![NuGet](https://img.shields.io/nuget/v/Aprillz.MewUI.svg?label=NuGet)](https://www.nuget.org/packages/Aprillz.MewUI/)
+[![NuGet Downloads](https://img.shields.io/nuget/dt/Aprillz.MewUI.svg?label=Downloads)](https://www.nuget.org/packages/Aprillz.MewUI/)
+
+---
+
+**😺 MewUI** is a cross-platform, lightweight, code-first .NET GUI framework for building and shipping NativeAOT/Trim-friendly desktop apps without requiring a separate .NET runtime installation.
+
+> [!NOTE]
+> The official pronunciation of **MewUI** is **/mjuː aɪ/** (“myoo-eye”).
+
+
+### Project Status: Active Development
+  > [!IMPORTANT]
+  > MewUI is an actively developed framework with published NuGet packages, cross-platform hosts, multiple rendering backends, and optional extension packages.
+  >
+  > The public API surface is still being stabilized, so breaking changes can happen between minor releases. For production apps, pin package versions and review release notes before upgrading.
+
+### 🤖 AI-Assisted Development
+  > [!NOTE]
+  > This project was developed using an **AI prompt–driven workflow**.  
+  > Design and implementation were performed through **iterative prompting without direct manual code edits**,  
+  > with each step reviewed and refined by the developer.
+
+### 🧠 MewUI Agent Skill
+
+Build package-based MewUI applications with Codex, Claude Code, or GitHub
+Copilot using the [MewUI agent skill](https://github.com/aprillz/mewui-skill).
+
+---
+
+## 🚀 Try It Out
+
+### In the browser
+**Nothing to install.** Open the gallery, running on WebAssembly: **[Run the MewUI Gallery in your browser](https://www.aprillz.net/MewUI/Gallery/)**
+
+### On your machine
+**No clone. No download. No project setup.**  
+You can **run MewUI immediately** with a single command on **Windows**, **Linux** or **macOS**.  (.NET 10 SDK required)
+> [!TIP]
+> This is the **quickest way to try MewUI** without going through the usual repository and project setup steps.
+```bash
+curl -sL https://raw.githubusercontent.com/aprillz/MewUI/refs/heads/main/samples/FBASample/fba_gallery.cs -o - | dotnet run -
+```
+
+> [!WARNING]
+> This command downloads and executes code directly from GitHub.
+
+### Video
+https://github.com/user-attachments/assets/fc2d6ad8-3317-4784-a6e5-a00c68e9ed3b
+
+### Screenshots
+
+| Light | Dark |
+|---|---|
+| ![Light (screenshot)](https://raw.githubusercontent.com/aprillz/MewUI/main/assets/screenshots/light.png) | ![Dark (screenshot)](https://raw.githubusercontent.com/aprillz/MewUI/main/assets/screenshots/dark.png) |
+
+---
+## ✨ Highlights
+
+- 📦 **NativeAOT + trimming** first
+- 🪶 **Lightweight** by design (small EXE, low memory footprint, fast first frame)
+- 🧩 Fluent **C# markup** (no XAML)
+
+## 🚀 Quickstart
+
+- NuGet: https://www.nuget.org/packages/Aprillz.MewUI/
+  - `Aprillz.MewUI` is a **metapackage** that bundles Core, all platform hosts, and all rendering backends.
+  - Platform-specific packages are also available: `Aprillz.MewUI.Windows`, `.Linux`, `.MacOS`
+  - Install: `dotnet add package Aprillz.MewUI`
+  - See: [Installation & Packages](docs/Installation.md)
+
+- File-Based App (FBA), VS Code friendly (.NET 10+)
+  - See: [samples/FBASample/fba_calculator.cs](samples/FBASample/fba_calculator.cs)
+  - Minimal header (without AOT/Trim options):
+
+    ```csharp
+    #:sdk Microsoft.NET.Sdk
+    #:property OutputType=Exe
+    #:property TargetFramework=net10.0
+
+    #:package Aprillz.MewUI@0.21.1
+
+    // ...
+    ```
+
+- Run: `dotnet run your_app.cs`
+
+---
+## 🧪 C# Markup at a Glance
+
+- Sample source: https://github.com/aprillz/MewUI/blob/main/samples/MewUI.Sample/Program.cs
+- An app registers a platform host and a rendering backend before `Application.Run`; MewUI does not pick them for you. See [Application Lifecycle](docs/ApplicationLifecycle.md).
+
+   ```csharp
+    // Windows here; Linux and macOS register their own host and backend.
+    Win32Platform.Register();
+    Direct2DBackend.Register();
+
+    var window = new Window()
+        .Title("Hello MewUI")
+        .Resizable(520, 360)
+        .Padding(12)
+        .Content(
+            new StackPanel()
+                .Spacing(8)
+                .Children(
+                    new Label()
+                        .Text("Hello, Aprillz.MewUI")
+                        .FontSize(18)
+                        .Bold(),
+                    new Button()
+                        .Content("Exit")
+                        .OnClick(Application.Shutdown)
+                )
+        );
+
+    Application.Run(window);
+    ```
+
+---
+## 🎯 Concept
+
+MewUI is a code-first GUI framework with a small, explicit core and platform-specific hosts/backends.
+
+- **NativeAOT + trimming friendliness**
+- **Small footprint, fast startup, low memory usage**
+- **Fluent C# markup** for building UI trees (no XAML)
+- **AOT-friendly explicit binding** (including nested paths)
+- **Thin core, optional extensions** for larger features
+
+### Non-goals (by design):
+- Full XAML/WPF compatibility
+- A drop-in replacement for WPF or Avalonia with identical APIs and behavior
+- Designer-first development workflows
+- Reflection-based path binding
+- An exhaustive, all-in-one control catalog
+
+The core covers common desktop UI patterns; specialized features such as charts and docking ship as extension packages.
+
+---
+## ✂️ NativeAOT / Trim
+
+- The library aims to be trimming-safe by default (explicit code paths, no reflection-based binding).
+- Windows interop uses source-generated P/Invoke (`LibraryImport`) for NativeAOT compatibility.
+- On Linux, building with NativeAOT requires the AOT workload in addition to the regular .NET SDK (e.g. install `dotnet-sdk-aot-10.0`).
+- If you introduce new interop or dynamic features, verify with the trimmed publish profile above.
+
+NativeAOT executable size depends on the platform host, rendering backend, resources, and publish options. The table below measures the **main executable only**; ZIP is the same executable compressed with the default measurement settings. Sizes use binary units: **1 MB = 1024 KB**.
+
+For reproducible size probes, regression budgets, and NativeAOT map analysis, see the [NativeAOT size tools](tools/aot-size/README.md).
+
+![MewUI publish size comparison](docs/assets/nativeaot-size-chart.svg)
+
+![MewUI publish size table](docs/assets/nativeaot-size-table.svg)
+
+[Measurement data](tools/aot-size/release-sizes.json)
+
+The Gallery is a full-featured showcase sample. Use the Hello World rows as the minimum deployment-size baseline.
+
+---
+## 🔗 State & Binding (AOT-friendly)
+
+Bindings are explicit and delegate-based, with no reflection. Three kinds of source are supported: `ObservableValue<T>`, a view model implementing `INotifyPropertyChanged`, and another element's `MewProperty<T>`. You can mix them within a single path, and `INotifyCollectionChanged` notifications are picked up as well.
+
+```csharp
+using Aprillz.MewUI.Binding;
+using Aprillz.MewUI.Controls;
+
+var percent = new ObservableValue<double>(
+    initialValue: 0.25,
+    coerce: v => Math.Clamp(v, 0, 1));
+
+var slider = new Slider()
+            .BindValue(percent);
+var label  = new Label()
+            .BindText(percent, v => $"Percent ({v:P0})");
+```
+
+**INotifyPropertyChanged** - an ordinary MVVM view model is used as-is, with no wrapper. Subscriptions are held weakly, so a view model never keeps UI objects alive in memory.
+
+```csharp
+new Label().Bind(Label.TextProperty, vm, x => x.UserName);
+
+// TextBox is two-way by default, so typed text is written back to the view model
+new TextBox().Bind(TextBox.TextProperty, vm, x => x.UserName);
+```
+
+**Nested paths** - a dotted expression is decomposed into per-step segments at compile time. No strings, no reflection, and when an intermediate value is replaced, every step after it is rewired automatically.
+
+```csharp
+// order.Customer.City
+var city = new TextBlock().Bind(TextBlock.TextProperty, order, x => x.Customer.City);
+
+// Indexer. Updates when item 0 changes, or when items are inserted or removed before it
+var first = new TextBlock().Bind(TextBlock.TextProperty, order, x => x.Lines[0].ProductName);
+```
+
+Each step picks how to observe from the member's type: `PropertyChanged` for `INotifyPropertyChanged`, its own notification for `ObservableValue<T>`, the matching `MewProperty` for a `MewObject`, and `CollectionChanged` for a notifying collection.
+
+This one-line syntax works when building with a .NET 9 or later SDK. Below that, the same path is written out explicitly with `BindingPath` and `ThenNotifying`; what you lose is the syntax, not the capability.
+
+See [Binding](docs/Binding.md) for segment kinds, null/fallback, TwoWay, collections, and lifetime rules.
+
+---
+## 🧱 Controls / Panels
+
+Controls (Implemented):
+- `Button`, `ToggleButton`, `RepeatButton`, `SplitButton`, `DropDownButton`
+- `SegmentedControl`, `ButtonGroup`
+- `Label`, `TextBlock`, `MarkupTextBlock`, `Image`
+- `TextBox`, `MultiLineTextBox`, `SyntaxViewer`, `PasswordBox`
+- `CheckBox`, `RadioButton`, `ToggleSwitch`
+- `ComboBox`, `ListBox`, `ItemsControl`, `TreeView`, `GridView`
+- `Slider`, `ProgressBar`, `ProgressRing`, `NumericUpDown`
+- `TabControl`, `GroupBox`, `Expander`, `Border`
+- `ColorPicker`, `DatePicker`, `Calendar`
+- `MenuBar`, `ContextMenu`, `ToolTip` (in-window popups)
+- `ToolBar` (declared bands of command groups, dragged by their grips)
+- `NavigationView`
+- `ScrollViewer`
+- `ContentControl`, `UserControl`, `TransitionContentControl`
+- `Popup`, `Separator`
+- `MessageBox`, `FileDialog`
+- `Window`, `DispatcherTimer`
+
+Panels:
+- `Grid` (rows/columns with `Auto`, `*`, pixel)
+- `StackPanel` (horizontal/vertical)
+- `DockPanel` (dock edges + last-child fill)
+- `UniformGrid` (equal cells)
+- `WrapPanel` (wrap + item size)
+- `Canvas` (absolute positioning)
+- `SplitPanel` (drag splitter)
+
+> All panels except `Canvas` (absolute) and `SplitPanel` support `Spacing`.
+
+---
+## 🧩 Extensions
+
+Optional packages layered on top of the core - reference only what you need.
+
+| Extension | Description | Package |
+|-----------|-------------|---------|
+| [**MewDock**](extensions/MewUI.MewDock/README.md) | Visual Studio style docking - document/tool tabs, drag rearranging, splits, auto-hide, maximize, popouts | `Aprillz.MewUI.MewDock` |
+| [**SVG**](extensions/MewUI.Svg/README.md) | Pure C# SVG parsing/rendering (no System.Drawing, AOT compatible) | `Aprillz.MewUI.Svg` |
+| [**Skia**](extensions/MewUI.Skia/README.md) | `SkiaCanvasView` (draw with SkiaSharp) + GPU zero-copy interop | `Aprillz.MewUI.Skia` |
+| [**MewCharts**](extensions/MewUI.MewCharts/README.md) | Charts (Cartesian/Pie/Polar) via the LiveChartsCore engine, no SkiaSharp dependency | `Aprillz.MewUI.MewCharts` |
+| [**Markdown**](extensions/MewUI.Markdown/README.md) | `MarkdownViewer` - native Markdown rendering via Markdig: tables, footnotes, task lists, code blocks with copy, links, images, text selection (no web view) | `Aprillz.MewUI.Markdown` |
+| [**WebView2**](extensions/MewUI.WebView2.Win32/README.md) | Win32 WebView2 control (requires the Microsoft Edge WebView2 runtime, Windows only) | `Aprillz.MewUI.WebView2.Win32` |
+
+**Skia interop** - add the zero-copy bridge matching your backend to enable the GPU fast path.
+
+| Backend | Package |
+|---------|---------|
+| Direct2D | `Aprillz.MewUI.Skia.Interop.Direct2D` |
+| GDI | `Aprillz.MewUI.Skia.Interop.Gdi` |
+| MewVG / Win32 | `Aprillz.MewUI.Skia.Interop.MewVG.Win32` |
+| MewVG / X11 | `Aprillz.MewUI.Skia.Interop.MewVG.X11` |
+| MewVG / macOS | `Aprillz.MewUI.Skia.Interop.MewVG.MacOS` |
+
+> Without an interop package, Skia content still renders via the CPU upload fallback. Skia is also bundled as metapackages `Aprillz.MewUI.Skia.Windows` / `.Linux` / `.MacOS` / `.All`.
+
+> **MewDock** is a C# port of [FlexLayout](https://github.com/caplin/FlexLayout) (MIT). **MewCharts** bundles the [LiveChartsCore](https://github.com/beto-rodriguez/LiveCharts2) engine (MIT). **Markdown** parses with [Markdig](https://github.com/xoofx/markdig) (BSD-2-Clause). See `THIRD_PARTY_NOTICES.md` for license notices.
+
+---
+## 🎨 Theme
+
+MewUI uses a `Theme` object (colors + metrics) and `ThemeManager` to control defaults and runtime changes.
+
+- Configure defaults before `Application.Run(...)` via `ThemeManager.Default*`
+- Change at runtime via `Application.Current.SetTheme(...)` / `Application.Current.SetAccent(...)`
+
+See: `docs/Theme.md`
+
+---
+## 🖌️ Rendering Backends
+
+Rendering is abstracted through:
+- `IGraphicsFactory` / `IGraphicsContext`
+
+Backends:
+
+| Backend | Platform | Package |
+|---------|----------|---------|
+| **Direct2D** | Windows | `Aprillz.MewUI.Backend.Direct2D` |
+| **GDI** | Windows | `Aprillz.MewUI.Backend.Gdi` |
+| **MewVG** | Windows | `Aprillz.MewUI.Backend.MewVG.Win32` |
+| **MewVG** | Linux/X11 | `Aprillz.MewUI.Backend.MewVG.X11` |
+| **MewVG** | macOS | `Aprillz.MewUI.Backend.MewVG.MacOS` |
+| **MewVG** | Browser (WebAssembly) | `Aprillz.MewUI.Backend.MewVG.Browser` |
+
+> **[MewVG](https://github.com/aprillz/MewVG)** is a managed port of [NanoVG](https://github.com/memononen/nanovg), using OpenGL on Windows/Linux, Metal on macOS and WebGL2 in the browser.
+
+Backends are registered by the referenced backend packages (Trim/AOT-friendly). In app code you typically either:
+- call `*Backend.Register()` before `Application.Run(...)`, or
+- use the builder chain: `Application.Create().Use...().Run(...)`
+
+When using a metapackage (e.g., `Aprillz.MewUI.Windows`), you can select a single backend at publish time with `-p:MewUIBackend=Direct2D`. See [Installation & Packages](docs/Installation.md) for details.
+
+---
+## 🪟 Platform Abstraction
+
+Windowing and the message loop are abstracted behind a platform layer.
+
+Currently implemented:
+- Windows (`Aprillz.MewUI.Platform.Win32`)
+- Linux/X11 (`Aprillz.MewUI.Platform.X11`)
+- macOS (`Aprillz.MewUI.Platform.MacOS`)
+- Browser/WebAssembly (`Aprillz.MewUI.Platform.Browser`) - renders into a canvas; see the [live gallery](https://www.aprillz.net/MewUI/Gallery/)
+
+### Dialog integration
+
+Prompt and file/folder services are routed through the platform abstraction. Managed MewUI `MessageBox` prompts support both synchronous and asynchronous use and are the recommended cross-platform choice. `NativeMessageBox` is optional when an OS-provided prompt is specifically desired, and falls back to managed when native integration is unavailable.
+
+MewUI provides cross-platform managed file and folder dialogs. By default, file and folder dialogs prefer native integration (`PreferNative = true`) and fall back to managed when it is unavailable or fails:
+
+- Windows uses Win32 file/folder dialogs.
+- macOS uses AppKit file/folder dialogs.
+- Linux/X11 uses XDG Desktop Portal. Portal unavailability or failure falls back to managed dialogs.
+
+Set `PreferNative` to `false` to use the managed dialog directly.
+
+### Drag and drop
+
+Windows, Linux/X11 and macOS deliver drops from other applications through the same events as drags inside the application. The data lists the standard formats every platform reads the same way (`DataFormats.StorageItems`, `Uris`, `Text`) followed by every format the source offered under the platform's own name, read as bytes with `DataFormats.FromPlatformName`. The browser platform does not receive drops from other applications. See [Drag and Drop](docs/DragAndDrop.md).
+
+---
+## 📄Docs
+
+- [Installation & Packages](docs/Installation.md)
+- [Build Switches](docs/BuildSwitches.md)
+- [C# Markup](docs/CSharpMarkup.md)
+- [Command System](docs/CommandSystem.md)
+- [Drag and Drop](docs/DragAndDrop.md)
+- [Binding](docs/Binding.md)
+- [Items and Templates](docs/ItemsAndTemplates.md)
+- [Theme](docs/Theme.md)
+- [Application Lifecycle](docs/ApplicationLifecycle.md)
+- [Layout](docs/Layout.md)
+- [Window Visual Layers](docs/WindowLayers.md)
+- [RenderLoop](docs/RenderLoop.md)
+- [Hot Reload](docs/HotReload.md)
+- [DevTools](docs/DevTools.md)
+- [Editor Preview](docs/Preview.md)
+- [Custom Controls](docs/CustomControls.md)
+- [Control Template](docs/ControlTemplate.md)
+- [Text Engine](docs/TextEngine.md)
+- [Text View Extensions](docs/TextViewExtensions.md)
+- [Localization](docs/Localization.md)
+
+---
+## 🤝 Community
+
+- [Contributing](CONTRIBUTING.md)
+- [Code of Conduct](.github/CODE_OF_CONDUCT.md)
+
+---
+## 🧭 Roadmap
+
+**Platforms**
+- [ ] Linux/Wayland
+- [ ] Linux framebuffer (DRM/KMS)
+- [ ] Touch support (desktop backends; already supported in the browser)
+
+---
+## License
+
+MewUI is licensed under the [MIT License](LICENSE).
+
+Third-party software notices are available in
+[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+
+## Fork
+
+MiaUI is a fork of [MewUI](https://github.com/aprillz/MewUI).
